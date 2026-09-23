@@ -1,0 +1,32 @@
+ranking-policy-ope
+Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+This repository contains code derived from the following projects, both
+distributed under the Apache License, Version 2.0
+(http://www.apache.org/licenses/LICENSE-2.0):
+
+1. Open Bandit Pipeline (zr-obp), version 0.5.5
+   https://github.com/st-tech/zr-obp
+   Copyright 2020 Yuta Saito, Yusuke Narita, and ZOZO Technologies, Inc.
+
+   - src/meta_slate.py is a modified copy of obp/ope/meta_slate.py
+     (the estimator-input routing additionally carries the exposure
+     decomposition nuisances).
+   - src/estimators_slate.py reuses the slate-level bootstrap and the
+     estimator method structure of obp/ope/estimators_slate.py.
+   - src/utils.py: EpsilonGreedyEvaluationPolicy.pscores follows the
+     epsilon-greedy propensity computation of obp/dataset/synthetic_slate.py.
+   - src/dataset.py reuses the input validation and the enumeration /
+     batching structure of calc_ground_truth_policy_value of
+     obp/dataset/synthetic_slate.py.
+   The remaining code imports and subclasses obp through its public API.
+
+2. kdd2023-aips (Kiyohara et al., KDD 2023)
+   https://github.com/aiueola/kdd2023-aips
+
+   - src/aips.py is a port, with modifications, of the user-behavior tree
+     and the subset propensity computation.
+   - src/estimators_slate.py: SlateAdaptiveIPS is a port of the AIPS
+     estimator.
+   The deviations from the reference implementation are listed in the
+   module docstring of src/aips.py.

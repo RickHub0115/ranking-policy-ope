@@ -1,0 +1,13 @@
+# Appendix: DCG-type position weights alpha_k = 1 / log2(k + 1). OBP
+# baselines receive
+# alpha-weighted rewards (equivalent reformulation); the proposed estimators
+# take position_weight natively.
+# Sweep:
+#   python src/main.py -m setting=app_position_weight \
+#     setting.position_weight=uniform,dcg \
+#     setting.n_rounds=1000,4000 n_seeds=50 n_jobs=8
+defaults:
+  - default
+
+name: app_position_weight
+position_weight: dcg

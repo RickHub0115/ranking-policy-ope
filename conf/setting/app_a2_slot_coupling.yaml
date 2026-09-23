@@ -1,0 +1,40 @@
+# Appendix A2': SLOT-LEVEL (A2)/(A3) violation.
+# The DGP is the Frechet-mixture variant of the exposure DGP
+# (dataset.FrechetCoupledExposureDataset): with probability or_coupling
+# (delta) the pair (O_k, R_k) is driven by one shared uniform, so
+# E[Y_k] = (1-delta) e r + delta min(e, r) — the product decomposition (A3)
+# and the within-slot independence (A2) break while the marginals e / r,
+# the slot-wise independence across positions and (A4) are all preserved.
+#
+# Contrast with app_a2_robustness (DBN): there the VECTOR-level independence
+# breaks and the bias route is e_hat misspecification (an oracle would fix
+# it); here even the ORACLE nuisances cannot recover, because no function of
+# the true marginals reproduces E[Y_k] — include_oracle stays true on
+# purpose, and the oracle |bias| growing with delta is the headline.
+#
+# delta = 0 reproduces the exposure DGP bitwise (except AIPS, whose shared
+# bootstrap stream shifts — same disclosed behavior as the DBN variant;
+# regression-tested in tests/test_or_coupled_dataset.py). Sweep on E3 (main
+# object) and E1 (negative control, bias ~ 0 predicted at every delta),
+# with the assumed exposure class matched to the truth as in fig1.
+#
+# Redesign: under the original parameters the (E3) cells almost all sit at
+# min(e, r) = e, where the coupling error degenerates back into a product
+# (effective relevance (1-d) r + d) and the oracle stays unbiased — the
+# headline failure vanishes. run_experiments.sh therefore passes
+# setting.relevance_scale=0.25 on the E3 command ONLY (lambda = beta = 1
+# unchanged), moving positions 2-5 to the min(e, r) = r side
+# (P(e<r) = 0, 0, .18, .63, .85; predicted relative bias at delta=1 is
+# -3.4%, z ~ 17 at 200 seeds). NOTE: with attract_relevance_align = 0.5
+# (default, not overridden here) the scale also lowers attract through the
+# relevance logit and RAISES the (E3) exposure e. E1 keeps
+# relevance_scale = 1 (constructively unbiased either way; the setting
+# difference is disclosed in the caption).
+# 200 seeds = main band, cycles 1 and 2:
+#   CYCLE=1 ./run_experiments.sh a2slot && CYCLE=2 ./run_experiments.sh a2slot
+defaults:
+  - default
+
+name: app_a2_slot_coupling
+dgp: or_coupled
+include_oracle: true

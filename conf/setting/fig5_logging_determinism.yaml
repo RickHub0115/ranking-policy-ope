@@ -1,0 +1,12 @@
+# Figure 5: collapse under (near-)deterministic logging.
+# Prediction: at tau0 = 0.05 the (e, r) confounding makes the
+# EM's theta ratios unrecoverable (non-identification), LE-IIPS / ED-DR
+# variance blows up, and IIPS dies of weight explosion too — everyone breaks.
+# Sweep:
+#   python src/main.py -m setting=fig5_logging_determinism \
+#     setting.tau0=0.05,0.2,0.5,1.0,2.0 n_seeds=100 n_jobs=8
+defaults:
+  - default
+
+name: fig5_logging_determinism
+clip_logit_value: 700.0

@@ -1,0 +1,15 @@
+# Appendix: EM initial-value sensitivity (3 random inits for warm=false,
+# single run for warm=true).
+# With warm_start=false the EM tower is initialized from em_random_state.
+# warm_start=true ignores em_random_state (init is deterministic intervention
+# harvesting — see exposure_model.py), so it gets a single job; seeds are swept
+# only on the warm=false side. Sweep (4 jobs):
+#   python src/main.py -m setting=app_em_sensitivity \
+#     setting.warm_start=false setting.em_random_state=0,1,2 n_seeds=50 n_jobs=8
+#   python src/main.py -m setting=app_em_sensitivity \
+#     setting.warm_start=true setting.em_random_state=0 n_seeds=50 n_jobs=8
+defaults:
+  - default
+
+name: app_em_sensitivity
+em_random_state: 0

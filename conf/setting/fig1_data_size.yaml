@@ -1,0 +1,36 @@
+# Figure 1 (flagship): relative MSE vs n under (E1) and (E3), log-log.
+# Sweep (structure and assumed class are PAIRED,
+# so two separate multiruns — hydra -m would take the cartesian product):
+#   python src/main.py -m setting=fig1_data_size \
+#     setting.exposure_structure=pbm setting.exposure_model_class=pbm \
+#     setting.n_rounds=400,800,1600,3200,6400 n_seeds=100 n_jobs=8
+#   python src/main.py -m setting=fig1_data_size \
+#     setting.exposure_structure=ranking_dependent \
+#     setting.exposure_model_class=ranking_dependent \
+#     setting.n_rounds=400,800,1600,3200,6400 n_seeds=100 n_jobs=8
+# NOTE on the n range: the sweep starts at n=400. Below that the
+# EM-based weights of the proposal explode without a clip (measured on the
+# M=200 pre-clip run, rd x rd: rel-MSE 2.3e4 at n=100, 899 at n=200, 0.25 at
+# n=400, 0.012 at n=800), and the exposure_ratio_clip that previously tamed
+# n=100/200 was retired so that every reported number is the raw (unclipped)
+# estimator. Disclose in the paper's limitations: the proposal needs n ≳ 400
+# in this environment (at n=400 iips still wins by ~10x; the crossover is
+# around n=800). The n=400 point has a heavy error tail (worst seed rel-err
+# ~4x), so expect a wide CI there — that is the honest picture.
+# NOTE: with exposure_structure=pbm keep exposure_model_class=pbm to test the
+# "no degradation under (E1)" claim; with ranking_dependent the assumed class
+# MATCHES the true structure, but only at the class level — the tower is
+# logistic-linear in [pos, pos x context, sum_{j<k} one-hot(a_j)] while the
+# DGP is log-linear in attract(x, a_j) (an x-dependent sigmoid), and the
+# relevance tower (x, one-hot(a)) lacks the context x action interactions of
+# logistic_reward_function. Read the estimated-nuisance curves as "same-class
+# flexible approximation"; a large-n MSE floor is possible (compare against
+# the oracle-nuisance runs to attribute it).
+# NOTE on AIPS at small n: with the published min_samples_leaf=100 the
+# UserBehaviorTree has at most a few forced splits at n=400, so the AIPS
+# curve's left end reflects a mostly global structure choice, not
+# context-adaptive selection.
+defaults:
+  - default
+
+name: fig1_data_size

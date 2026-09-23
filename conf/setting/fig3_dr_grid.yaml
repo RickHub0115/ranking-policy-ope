@@ -1,0 +1,55 @@
+# Figure 3: double robustness under FEASIBLE misspecification (oracle
+# nuisances, corrupted per channel).
+#
+# Corrupted objects: the exposure e_k(x, a) and the relevance r(x, a(k)),
+# with continuous strengths ("power:<t>" maps v -> v^(1+t); strength 0 runs
+# as "none" so the zero cell IS the uncorrupted configuration, bit for bit).
+# Two exposure-corruption methods (see conf/setting/default.yaml and
+# make_corruption in src/main.py):
+#   method E (corrupt_exposure)       — the same corrupted exposure MODEL
+#     consistently feeds numerator / denominator / residual baseline;
+#   method R (corrupt_exposure_ratio) — e_bar^pi only; ratio error exactly
+#     known, immune to the MC noise floor.
+# Conditions (100 seeds each, main seed band; method R alone is EXACTLY
+# unbiased because the residual baseline q_hat stays true, and method E
+# under (E3) keeps a first-order term because its pointwise error is not
+# transported):
+#   (a) (E3) truth, exposure true, relevance corrupted
+#   (b) (E2) truth, relevance true, exposure corrupted in-class (method E;
+#       the pbm/contextual shortcut makes the ratio exactly 1, so the
+#       prediction is ratio error ~ 0 AND bias ~ 0)
+#   (c) (E3) truth, exposure corrupted with method E: the feasible
+#       OUT-OF-CLASS misspecification; first-order bias (slope ~1), ed-dr
+#       degrades to the le-iips level (the theorem's boundary)
+#   (d) (E3) truth, method R alone; bias == 0 at every strength (one true
+#       nuisance -> exact double robustness)
+#   (e) (E3) truth, method R x relevance, CALIBRATED pairs (relevance
+#       error = 0.5 * ratio error); |bias| vs the exactly-known ratio error
+#       on log-log, slope 2 (ED-DR) vs slope 1 (LE-IIPS)
+#
+# Method E under (E3) has an MC noise floor on the measured ratio error
+# (e_bar^pi is an average over n_mc_samples sampled rankings). The strength
+# levels are passed in by run_experiments.sh (FIG3_E_STRENGTHS /
+# FIG3_R_STRENGTHS / FIG3_REL_STRENGTHS / FIG3_RXREL_PAIRS); they were chosen
+# log-spaced from >= 3-5x the measured floor (strength 0 run). The R-based
+# series (d)/(e) have NO floor on the x axis (the ratio error is exact).
+#
+# n_mc_samples is raised from the default 100 to 10000: at S = 100 the floor
+# (0.106) is too close to the ceiling of the method-E ratio error (~0.28, where
+# the power map saturates at t ~ 5), and the floor shrinks as 1/sqrt(S) at
+# almost no extra cost (the pscore sampling dominates the run time). At
+# S = 10000 the floor is ~0.011, so the levels t = 0.05 / 0.16 / 0.5 / 1.6 / 5
+# sit at 3.5-24x the floor. n_mc_samples is an aggregation key, so these
+# cells never mix with rows of other settings.
+#
+# Only the oracle estimators are the object here, so the estimated-nuisance
+# and baseline estimators are all skipped (estimators: []) — one replication
+# is just the ground truth + two oracle MC sweeps.
+defaults:
+  - default
+
+name: fig3_dr_grid
+exposure_structure: ranking_dependent
+exposure_model_class: ranking_dependent
+estimators: []
+n_mc_samples: 10000   # raised from the default 100 (see the note above)

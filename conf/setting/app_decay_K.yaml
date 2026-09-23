@@ -1,0 +1,14 @@
+# Appendix: dependence on the exposure decay rate lambda (at the default
+# slate size K=5). Drawn as figs/appendix_decay_K.png = the paper's Figure 3.
+# Sweep (wrapper stage `decay`, appendix seed band; not part of the
+# `appendix` stage):
+#   python src/main.py -m setting=app_decay_K \
+#     setting.exposure_decay_rate=0.5,1.0,2.0 n_seeds=50 n_jobs=8
+#   START_SEED=100 N_SEEDS=400 ./run_experiments.sh decay   # seeds 100-499 on top of 0-99
+# NOTE: only K = 5 (the default) is swept; K = 10 would need MC-marginalized
+# behavior pscores (pscore_mc_samples=20000) because the P(m, K) permutation
+# enumeration is infeasible.
+defaults:
+  - default
+
+name: app_decay_K

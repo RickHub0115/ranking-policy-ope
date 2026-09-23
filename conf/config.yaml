@@ -1,0 +1,36 @@
+# Root Hydra config of the experiments.
+#
+# mode: "run"  — execute n_seeds Monte-Carlo replications of `setting` and
+#                write results.csv / aggregate.csv into the Hydra job dir
+#                (under `log_dir`), plus figs/<setting.name>_summary.png.
+#       "plot" — scan `log_dir` recursively for results.csv and render
+#                figs/fig1..fig5, table1 and the appendix figures (PNG); the
+#                aggregate CSV tables are written to data/<data_date>/ instead.
+defaults:
+  - setting: default
+  - _self_
+
+mode: run
+n_seeds: 100          # M Monte-Carlo replications (seed = start_seed + i);
+                      # matches the main-figure runs (appendix runs pass
+                      # n_seeds=50 explicitly — see run_experiments.sh)
+start_seed: 0
+n_jobs: 1             # joblib processes over seeds (kdd2023-aips style)
+log_dir: logs
+data_date: null       # mode=plot writes the aggregate CSVs to data/<data_date>/;
+                      # null → today's date. Pin it to re-aggregate an existing
+                      # run into its dir (e.g. data_date=2026-07-20).
+show_ci: false        # mode=plot: draw the 95% CI bands / whiskers on the
+                      # rel-MSE / bias^2 / variance figures (off: point
+                      # estimates only; the SE columns of aggregate_all.csv
+                      # are still written). Figure 3's signed-bias CIs are a
+                      # different figure and unaffected.
+
+hydra:
+  job:
+    chdir: true
+  run:
+    dir: ${log_dir}/${setting.name}/run_${now:%Y-%m-%d_%H-%M-%S}
+  sweep:
+    dir: ${log_dir}/${setting.name}/multirun_${now:%Y-%m-%d_%H-%M-%S}
+    subdir: ${hydra.job.num}

@@ -1,0 +1,10 @@
+# Appendix: sensitivity to the Monte-Carlo sample size S used for the
+# conditional expected exposure e_bar^pi and the DM term (the
+# approximation error is handled within Prop. 3).
+# Sweep:
+#   python src/main.py -m setting=app_mc_samples \
+#     setting.n_mc_samples=10,30,100,300 n_seeds=50 n_jobs=8
+defaults:
+  - default
+
+name: app_mc_samples

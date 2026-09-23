@@ -1,0 +1,21 @@
+# Figure 4 (losing condition): the true DGP is a cascade click model.
+# Slot-wise (A2)/(A3) still hold (the slot reward factors into exposure x
+# relevance); what breaks is the position-independence (A4), and the true
+# exposure (the expected product of no-clicks above) lies outside the assumed
+# exposure classes, so ED-DR's e_hat is misspecified. Prediction: RIPS /
+# Cascade-DR win on bias^2; ED-DR carries the misspecification bias. The true
+# exposure is ranking-prefix dependent, so the (x, a)-measurable
+# exposure-recovery diagnostics and oracle estimators are NaN / skipped.
+# Run (single configuration — the paper figure is one bar chart per
+# estimator with no eta axis, so sweeping eta would only be averaged across
+# DGPs with different ground truths):
+#   python src/main.py setting=fig4_cascade n_seeds=100 n_jobs=8
+# (eta = exposure_decay_rate is the cascade continuation parameter here and
+# stays at the default 1.0; restore a sweep only together with an eta axis
+# in make_fig4)
+defaults:
+  - default
+
+name: fig4_cascade
+dgp: cascade
+include_oracle: false

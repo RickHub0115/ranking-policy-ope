@@ -1,0 +1,19 @@
+# Table 1: the 3x3 exposure-model misspecification grid — true exposure
+# structure x assumed exposure model class, relative MSE (estimated nuisances).
+# Prediction: the diagonal is best; pbm applied to (E3) degrades gracefully
+# toward IIPS (Prop. 3).
+# NOTE: "diagonal" means the assumed CLASS matches the true structure, not
+# exact correct specification — the logistic-linear towers do not nest the
+# DGP's functional forms (log-link exposure with x-dependent attract;
+# relevance with context x action interactions). Report the diagonal as
+# "same-class flexible model"; exact-specification claims belong to the
+# oracle-corruption grid (fig3).
+# Sweep (3 x 3 = 9 jobs):
+#   python src/main.py -m setting=table1_misspecification \
+#     setting.exposure_structure=pbm,contextual_pbm,ranking_dependent \
+#     setting.exposure_model_class=pbm,contextual_pbm,ranking_dependent \
+#     n_seeds=100 n_jobs=8
+defaults:
+  - default
+
+name: table1_misspecification

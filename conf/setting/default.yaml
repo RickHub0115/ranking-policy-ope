@@ -1,0 +1,135 @@
+# Default configuration: the fixed values used when sweeping one
+# axis at a time — K=5, m=10, n=4000, lambda=1, beta=1, tau0=1,
+# evaluation policy = optimal epsilon-greedy (epsilon=0.2), dim_context=5,
+# base_reward_function = logistic_reward_function.
+name: default
+
+# ---- DGP -------------------------------------------------------------
+dgp: exposure                       # exposure | dbn ((A2)-violating DBN variant)
+                                    #          | cascade ((A4)-violating DGP; e_hat misspecified)
+n_unique_action: 10                 # m
+len_list: 5                         # K
+dim_context: 5
+exposure_structure: ranking_dependent  # pbm (E1) | contextual_pbm (E2) | ranking_dependent (E3)
+exposure_decay_rate: 1.0            # lambda (also eta of the cascade DGP)
+attention_spillover: 1.0            # beta (E3); 0 degenerates to (E1)
+attract_relevance_align: 0.5        # (E3) attract vs relevance alignment in [0,1];
+                                    # 0 = independent attractiveness (IIPS bias ~ 0
+                                    # by construction), >0 = attractive items are
+                                    # the relevant ones (the regime of interest)
+n_user_segments: 2                  # (E2)
+or_correlation: 0.0                 # rho (dgp=dbn only): DBN satisfaction prob —
+                                    # after each click the user abandons the list
+                                    # w.p. rho, correlating the exposure noise O_k
+                                    # with the relevance noise R_{j<k} ((A2)
+                                    # violation strength; 0 = the exposure DGP,
+                                    # bitwise). Sweep axis of app_a2_robustness.
+or_coupling: 0.0                    # delta (dgp=or_coupled only): weight of the
+                                    # within-slot Frechet O-R coupling — with
+                                    # prob delta the pair (O_k, R_k) is driven by
+                                    # one shared uniform, so E[Y_k] =
+                                    # (1-delta) e r + delta min(e, r) while the
+                                    # marginals and (A4) are preserved (slot-level
+                                    # (A2)/(A3) violation; 0 = the exposure DGP,
+                                    # bitwise except AIPS). Sweep axis of
+                                    # app_a2_slot_coupling. The ONLY config key
+                                    # backfilled (with 0.0) for pre-existing
+                                    # results.csv in mode=plot.
+relevance_scale: 1.0                # s in (0, 1]: r(x,a) = s * base_reward_function.
+                                    # The DGP, the ground truth, the oracle and the
+                                    # EM all see the scaled r; aggregation key
+                                    # (CONFIG_KEYS). NOTE: with
+                                    # attract_relevance_align > 0 the scale also
+                                    # lowers attract through the relevance logit,
+                                    # which raises the (E3) exposure e (side effect).
+n_rounds: 4000                      # n
+tau0: 1.0                           # logging temperature (logit / tau0)
+clip_logit_value: null              # set e.g. 700.0 for large m
+pscore_mc_samples: 0                # >0: MC-marginalized pscore_item_position
+                                    # (use for m=30 / K=10 where enumeration blows up)
+
+# ---- evaluation policy -------------------------------------------------
+evaluation_policy:
+  type: epsilon_greedy              # epsilon_greedy | pl_softmax
+  epsilon: 0.2
+  tau1: 1.0                         # pl_softmax temperature
+
+# ---- nuisances -----------------------------------------------------------
+exposure_model_class: ranking_dependent  # misspecification switch (assumed class)
+relevance_model: logistic_regression     # logistic_regression | gradient_boosting
+exposure_base_model: logistic_regression
+n_em_iter: 20
+em_tol: 1.0e-6
+warm_start: true                    # intervention-harvesting initialization
+monotone_position_tower: true
+em_random_state: null               # fixed EM init seed (init-sensitivity axis);
+                                    # null -> derived from the replication seed
+em_init: null                       # explicit EM init scheme (init-sensitivity
+                                    # appendix): null = historical
+                                    # behavior (warm_start decides), "const" =
+                                    # theta_k = 0.5, "anti_mono" = ascending
+                                    # (adversarial) sorted uniforms. Requires
+                                    # warm_start=false. NOT an aggregation
+                                    # column: every non-null value must run
+                                    # under its own setting_name
+                                    # (app_em_init_*), or mode=plot would blend
+                                    # cells that only differ in the init.
+n_folds: 2                          # cross-fitting folds (1 = no sample split)
+exposure_ratio_clip: null           # cap M on the exposure ratio e_bar_hat / e_hat
+                                    # in the LE-IIPS / ED-DR weight denominator.
+                                    # null -> off. The clip is retired for the
+                                    # reported runs — fig1 starts at n=400, where
+                                    # the raw weights are stable (no-clip rel-MSE
+                                    # 0.25 vs 899 at n=200, 2.3e4 at n=100; measured
+                                    # on the M=200 pre-clip run), and every other
+                                    # experiment runs at n=4000 where the ratio's
+                                    # theoretical bound (~55) is far below any cap.
+                                    # auto -> sqrt(n * K), float -> fixed cap.
+n_mc_samples: 100                   # S for e_bar^pi / DM-term Monte Carlo
+cascade_dr_base_model: gradient_boosting  # gradient_boosting | ridge
+
+# ---- AIPS baseline (KDD 2023 port; src/aips.py) ----------------------------
+aips:
+  n_partition: 10           # random (feature, threshold) draws per tree node
+  min_samples_leaf: 100
+  max_depth: 5
+  n_bootstrap: 10           # fresh env draws for the tree's bias oracle
+  noise_level: 0.3          # relative corruption of the bias oracle (as published)
+  n_value_mc_draws: 20      # MC draws for the position-wise oracle value
+  pscore_mc_samples: 1000   # MC draws for bootstrap positional marginals
+
+# ---- estimators & metrics -------------------------------------------------
+# sips retired: not computed any more, and the rows of the earlier
+# cycles are dropped at merge (RETIRED_ESTIMATORS in src/main.py)
+estimators: [iips, rips, cascade-dr, aips, dm, dr-iips, le-iips, ed-dr]
+include_oracle: true                # always run oracle LE-IIPS / ED-DR alongside
+position_weight: uniform            # uniform | dcg (alpha_k = 1/log2(k+1))
+oracle_corruption:
+  # Figure 3 channels. Kinds: none | power
+  # (legacy v^1.5) | shift | power:<t> (v^(1+t), continuous strength; run
+  # strength 0 as none).
+  #   corrupt_exposure       — METHOD E: corrupts the exposure MODEL itself
+  #     via the OracleNuisance hook, so the SAME corrupted e feeds the
+  #     numerator e_bar^pi, the denominator e_hat and the residual baseline
+  #     e_hat * r_hat consistently (the only way to test whether an exposure
+  #     error cancels in the ratio).
+  #   corrupt_exposure_ratio — METHOD R: breaks the importance weights only
+  #     (the map is applied to e_bar^pi, the numerator of the exposure
+  #     ratio); the ratio error is then exactly known (slope measurements).
+  #   corrupt_relevance      — breaks the outcome model (DM term + residual
+  #     baseline) only.
+  # The two weight-side channels are mutually exclusive. Both are recorded
+  # in the single results.csv column `corrupt_exposure_ratio` (method E as
+  # "E:power:<t>") — adding a required config column would invalidate every
+  # existing results.csv. corrupt_relevance is independent of the weight-side
+  # channels and may be combined with method R (the R x relevance pairs of
+  # fig3 condition (e)).
+  corrupt_exposure: none
+  corrupt_exposure_ratio: none
+  corrupt_relevance: none
+
+# ---- ground truth ---------------------------------------------------------
+ground_truth:
+  method: auto                      # exact | mc | auto (exact iff P(m,K) small)
+  n_mc_samples: 1000000
+  max_enumeration: 100000

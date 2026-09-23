@@ -1,0 +1,10 @@
+# Figure 2: bias^2 / variance stacked bars vs policy divergence.
+# Sweep:
+#   python src/main.py -m setting=fig2_policy_divergence \
+#     setting.evaluation_policy.epsilon=0.0,0.2,0.5,0.8,1.0 n_seeds=100 n_jobs=8
+# (epsilon=0.0 is the deterministic evaluation policy: cascade-dr is skipped
+# there because SlateRegressionModel requires positive cascade pscores.)
+defaults:
+  - default
+
+name: fig2_policy_divergence

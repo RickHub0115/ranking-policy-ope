@@ -1,0 +1,21 @@
+# Appendix EM-init sensitivity, extra scheme "const-0.5": the EM position
+# tower starts at the flat theta_k = 0.5 instead
+# of the warm start / sorted random draws of app_em_sensitivity.
+#
+# em_init is deliberately NOT an aggregation column (adding a required
+# results.csv column would invalidate every existing log), so each explicit
+# init scheme gets its own setting_name — never sweep setting.em_init under
+# one name. em_random_state is unused by the const init itself but pins the
+# classifier streams to the same value as the app_em_sensitivity runs.
+# Only the two EM consumers the figure shows are run (le-iips / ed-dr; the
+# oracle rows and baselines do not depend on the EM init).
+# 50 seeds = appendix band, cycle 1: CYCLE=1 ./run_experiments.sh eminit
+defaults:
+  - default
+
+name: app_em_init_const
+warm_start: false
+em_random_state: 0
+em_init: const
+include_oracle: false
+estimators: [le-iips, ed-dr]

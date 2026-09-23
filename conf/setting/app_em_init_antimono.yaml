@@ -1,0 +1,18 @@
+# Appendix EM-init sensitivity, extra scheme "anti-mono": the EM position
+# tower starts from ASCENDING sorted uniforms —
+# the monotonicity of the position exposure deliberately reversed, an
+# adversarial initialization (the historical random scheme sorts the same
+# draws descending).
+#
+# See app_em_init_const.yaml for why each explicit init scheme has its own
+# setting_name and why only le-iips / ed-dr are run.
+# 50 seeds = appendix band, cycle 1: CYCLE=1 ./run_experiments.sh eminit
+defaults:
+  - default
+
+name: app_em_init_antimono
+warm_start: false
+em_random_state: 0
+em_init: anti_mono
+include_oracle: false
+estimators: [le-iips, ed-dr]

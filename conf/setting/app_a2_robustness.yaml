@@ -1,0 +1,23 @@
+# Appendix ((A2) robustness): the true DGP is the
+# DBN-satisfaction variant of the exposure DGP (dataset.DBNClickBanditDataset).
+# After each click the user is satisfied w.p. `or_correlation` (rho) and
+# abandons the list, so the exposure noise O_k depends on the realized
+# relevance noise R_{j<k} of the slots above — the (A2) conditional
+# independence behind the E[Y] = e * r decomposition of LE-IIPS / ED-DR is
+# violated with controllable strength while the logging side (actions,
+# pscores, marginals e_k, r) stays untouched. rho = 0 reproduces the exposure
+# DGP bitwise (regression-tested in tests/test_a2_dbn_dataset.py); the sweep
+# measures how gracefully the proposal's bias / rel-MSE degrade relative to
+# the baselines (iips etc.).
+# No oracle estimators (same handling as fig4_cascade): under rho > 0 the
+# (x, k, a(k))-measurable marginal that OracleNuisance serves is no longer
+# the true exposure, so an "oracle" would be a misnomer.
+# Run (appendix seed count M=50):
+#   python src/main.py -m setting=app_a2_robustness \
+#     setting.or_correlation=0.0,0.25,0.5,0.75,1.0 n_seeds=50 n_jobs=8
+defaults:
+  - default
+
+name: app_a2_robustness
+dgp: dbn
+include_oracle: false

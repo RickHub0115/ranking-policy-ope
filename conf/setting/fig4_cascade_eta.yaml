@@ -1,0 +1,16 @@
+# Cascade-strength sweep: identical to
+# fig4_cascade except for the name — eta = exposure_decay_rate is the sweep
+# axis here (eta = 0 removes the cascade click discount entirely, the
+# position-independence baseline; larger eta = stronger cascading).
+#
+# Run ONLY the four new levels; eta = 1.0 is REUSED from the merged
+# fig4_cascade logs (200 seeds) and must not be re-run — make_fig4_eta /
+# _fig4_eta_frame in src/main.py raise if eta = 1.0 rows appear under this
+# setting name. 200 seeds = main band, cycles 1 and 2:
+#   CYCLE=1 ./run_experiments.sh fig4eta && CYCLE=2 ./run_experiments.sh fig4eta
+defaults:
+  - default
+
+name: fig4_cascade_eta
+dgp: cascade
+include_oracle: false
